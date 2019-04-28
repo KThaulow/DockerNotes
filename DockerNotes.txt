@@ -1,0 +1,32 @@
+Notes for Docker
+______________________________________________________________________
+*** Docker build ***
+
+* Docker build
+(navigate to folder with dockerfile)
+docker build .
+
+* Docker build with custom dockerfile (e.g. Dockerfile.dev)
+docker build -f Dockerfile.dev .
+
+______________________________________________________________________
+*** Docker run ***
+
+* Docker run
+docker run imagename
+
+* Docker run with arguments (e.g. "ping google.com")
+docker run imagename ping google.com
+
+* Docker run with port binding
+docker run -p 3000:3000 imagename
+(Local PC port:Container port)
+
+* Docker run with attached input from terminal
+docker run -it imagename
+
+* Docker run with volumes
+docker run -p 3000:3000 -v /app/node_modules -v ${pwd}:/app imagename
+(first -v   : Bind folder in container)
+(second -v  : Bind folder outside container)
+(Use $(pwd) instead of ${pwd} in bash)
