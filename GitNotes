@@ -1,0 +1,7 @@
+*** Notes for Git ***
+
+git init
+git add .
+git commmit -m "Initial commit"
+git remote add origin git@github.com:Thaulow/Something.git
+git push -u origin master
