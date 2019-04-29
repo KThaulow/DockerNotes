@@ -1,0 +1,10 @@
+Azure Service Fabric Mesh
+
+az mesh deployment create --resource-group ServiceFabric --template-file C:\Users\krist\Desktop\sfmesh2.json --parameters C:\Users\krist\Desktop\sfmeshparameters2.json
+
+az mesh deployment create --resource-group ServiceFabricMesh --template-file /home/kristian1990/sfmesh2.json --parameters "/home/kristian1990/sfmesh2.parameters.json"
+
+
+az mesh deployment create --resource-group ServiceFabric --input-yaml-files /home/kristian1990/sfmesh1.yml --parameters /home/kristian1990/sfmeshparameters.yml
+
+az mesh deployment create --resource-group ServiceFabric --input-yaml-files ./sfmesh1.yml  --parameters ./sfmeshparameters.yml

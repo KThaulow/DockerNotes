@@ -1,0 +1,110 @@
+How to deploy an application to a Docker container in Azure
+
+--------------------------------------------------------------
+Create a file named "Dockerfile" (without any extensions) and save it next to the csproj to run:
+
+FROM microsoft/dotnet:2.2-sdk
+WORKDIR /app
+
+# copy csproj and restore as distinct layers
+COPY *.csproj ./
+RUN dotnet restore
+
+# copy and build everything else
+COPY . ./
+RUN dotnet publish -c Release -o out
+ENTRYPOINT ["dotnet", "out/ApplicationName.dll"]
+
+--------------------------------------------------------------
+
+Build image:
+docker build -t appname .
+
+--------------------------------------------------------------
+
+Run locally:
+docker run --rm appname 
+
+--------------------------------------------------------------
+
+Login to Azure Registry Container:
+az acr login --name ContainerRegKT
+
+--------------------------------------------------------------
+
+Tag the image ("source name" "login server name"/"target name":"tag"):
+docker tag appname containerregkt.azurecr.io/appname:dev
+
+--------------------------------------------------------------
+
+Push the image to a registry (Azure Registry Container):
+docker push containerregkt.azurecr.io/kristian-application:dev
+
+
+--------------------------------------------------------------
+
+Get credentials to Azure Container Registry
+az acr credential show --name containerregkt
+
+--------------------------------------------------------------
+
+Create a service principal and store credentials in Key Vault (!!! Inserting incorrect credentials !!!):
+
+# Create service principal, store its password in AKV (the registry *password*)
+az keyvault secret set \
+  --vault-name $AKV_NAME \
+  --name $ACR_NAME-pull-pwd \
+  --value $(az ad sp create-for-rbac \
+                --name $ACR_NAME-pull \
+                --scopes $(az acr show --name $ACR_NAME --query id --output tsv) \
+                --role acrpull \
+                --query password \
+                --output tsv)
+
+# Store service principal ID in AKV (the registry *username*)
+az keyvault secret set \
+    --vault-name $AKV_NAME \
+    --name $ACR_NAME-pull-usr \
+    --value $(az ad sp show --id http://$ACR_NAME-pull --query appId --output tsv)
+
+-----------------------------------------------------------------------------
+
+Deploy container instance:
+
+- Without KeyVault:
+az container create --resource-group 5bffa1e1-5e19-40f6-b521-b6c59ee3be71 --name kt-container --image containerregkt.azurecr.io/kristian-application:dev --registry-login-server containerregkt.azurecr.io --ip-address Public --location eastus --registry-username <username> --registry-password <password>
+
+- With KeyVault (image name can not contain capital letters):
+
+ACR_NAME=KTContainerRegistry        			# The name of your Azure container registry
+AKV_NAME=KTContainerReg-vault        			# The name of your Azure key vault
+RES_GROUP=KubernetesRS        				# The name of your ressource group
+
+az container create \
+    --resource-group $RES_GROUP \
+    --name console-app-container \
+    --image ktcontainerregistry.azurecr.io/consoleapplication:cb3 \
+    --registry-login-server ktcontainerregistry.azurecr.io \
+    --registry-username $(az keyvault secret show --vault-name $AKV_NAME --name $ACR_NAME-pull-usr --query value -o tsv) \
+    --registry-password $(az keyvault secret show --vault-name $AKV_NAME --name $ACR_NAME-pull-pwd --query value -o tsv)
+
+az container create \
+    --resource-group $RES_GROUP \
+    --name console-app-container \
+    --image ktcontainerregistry.azurecr.io/consoleapplication:cb4 \
+    --registry-login-server ktcontainerregistry.azurecr.io \
+    --registry-username $(az keyvault secret show --vault-name $AKV_NAME --name $ACR_NAME-pull-usr --query value -o tsv) \
+    --registry-password $(az keyvault secret show --vault-name $AKV_NAME --name $ACR_NAME-pull-pwd --query value -o tsv) \
+    --assign-identity
+
+--------------------------------------------------------------
+Check startup deployment:
+
+az container attach --resource-group $RES_GROUP --name kt-container
+
+--------------------------------------------------------------
+
+Check logs:
+az container logs --resource-group 5bffa1e1-5e19-40f6-b521-b6c59ee3be71 --name kt-container
+
+--------------------------------------------------------------

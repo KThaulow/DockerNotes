@@ -1,0 +1,31 @@
+Create Azure Kubernetes Service
+
+--------------------------------------------------------------------------
+
+Create service principal
+
+az ad sp create-for-rbac --skip-assignment
+
+---------------------------------------------------------------------------
+
+Get ACR ressource ID
+
+az acr show --resource-group myResourceGroup --name <acrName> --query "id" --output tsv
+
+---------------------------------------------------------------------------
+	
+Grant AKS access to pull images
+
+az role assignment create --assignee <appId> --scope <acrId> --role acrpull
+
+---------------------------------------------------------------------------
+
+Create cluster
+
+az aks create \
+    --resource-group KubernetesRS \
+    --name KTKubernetesCluster \
+    --node-count 1 \
+    --service-principal $APP_ID \
+    --client-secret $AKS_PAS \
+    --generate-ssh-keys

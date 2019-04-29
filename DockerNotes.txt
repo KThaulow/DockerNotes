@@ -30,3 +30,10 @@ docker run -p 3000:3000 -v /app/node_modules -v ${pwd}:/app imagename
 (first -v   : Bind folder in container)
 (second -v  : Bind folder outside container)
 (Use $(pwd) instead of ${pwd} in bash)
+
+
+______________________________________________________________________
+*** Docker exec ***
+
+* Docker exec (attach to running container and execute arguments (e.g. "ping google.com"))
+docker exec -it containername ping google.com
