@@ -37,3 +37,6 @@ ______________________________________________________________________
 
 * Docker exec (attach to running container and execute arguments (e.g. "ping google.com"))
 docker exec -it containername ping google.com
+
+* Docker exec with attached shell
+docker exec -it containername sh

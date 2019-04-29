@@ -1,0 +1,21 @@
+*** FROM ***
+FROM node
+FROM node:alpine
+FROM node:alpine as builder
+
+*** WORKDIR ***
+# Set working directory to /app in contaienr
+WORKDIR /app
+
+*** COPY ***
+# Copy all from source to target in workdir
+COPY . . 
+
+# Copy package.json to workdir
+COPY package.json . 
+
+# Copy from builder stage /app/build 
+COPY --from=builder /app/build /usr/share/nginx/html
+
+*** RUN ***
+RUN ["npm", "run", "build"]
