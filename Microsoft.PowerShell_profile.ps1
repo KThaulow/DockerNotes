@@ -15,7 +15,7 @@ function gpull {
 }
 
 function gaa {
-    git add .
+    git add --all
 }
 
 function gac($message) {
