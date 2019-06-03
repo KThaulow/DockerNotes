@@ -19,10 +19,6 @@ function gaa {
 }
 
 function gac($message) {
-    git add .
+    git add --all
     git commit -m $message
 }
-
-
-
-
